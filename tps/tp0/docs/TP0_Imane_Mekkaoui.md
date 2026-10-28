@@ -29,7 +29,7 @@ Les résultats reposent sur un unique découpage aléatoire, et le fichier fourn
 # TP0 : CantineAI
 
 **Nom :** Mekkaoui Imane
-**Groupe :** G1
+**Groupe :** G
 
 ## Problématique
 L’objectif est d’estimer, pour une date donnée, le nombre de repas à préparer afin de limiter à la fois le gaspillage et le risque de manquer de repas.
