@@ -28,7 +28,7 @@ Les résultats reposent sur un unique découpage aléatoire, et le fichier fourn
 
 # TP0 : CantineAI
 
-**Nom :** RHAZOUANI Malak  
+**Nom :** Mekkaoui Imane
 **Groupe :** G
 
 ## Problématique
