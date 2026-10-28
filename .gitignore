@@ -1,0 +1,12 @@
+# Environnements Python
+venv/
+.venv/
+**/venv/
+**/.venv/
+
+# Fichiers temporaires Python
+__pycache__/
+*.pyc
+
+# Secrets et configuration locale
+.env
