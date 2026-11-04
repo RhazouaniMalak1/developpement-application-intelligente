@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>MaintAI : client web</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 520px; margin: 40px auto; padding: 0 16px; }
+  label { display: block; margin-top: 12px; }
+  input { width: 100%; padding: 6px; box-sizing: border-box; }
+  button { margin-top: 16px; padding: 8px 16px; }
+  #result { margin-top: 20px; padding: 12px; border-radius: 6px; }
+  .ok { background: #e6f4ea; } .alert { background: #fde7e7; } .err { background: #fff4e5; }
+</style>
+</head>
+<body>
+<h1>MaintAI</h1>
+<label>URL de l'API <input id="url" value="http://localhost:8000"></label>
+<label>Clé API <input id="key" type="password"></label>
+<label>Température (°C) <input id="temperature_c" type="number" step="0.1" value="72"></label>
+<label>Vibration (mm/s) <input id="vibration_mm_s" type="number" step="0.1" value="6"></label>
+<label>Charge (%) <input id="load_pct" type="number" step="1" value="85"></label>
+<label>Heures de fonctionnement <input id="runtime_hours" type="number" step="100" value="15000"></label>
+<button id="go">Prédire</button>
+<div id="result"></div>
+<script>
+const FEATURES = ["temperature_c", "vibration_mm_s", "load_pct", "runtime_hours"];
+const show = (cls, text) => {
+  const r = document.getElementById("result");
+  r.className = cls;
+  r.textContent = text;
+};
+
+document.getElementById("go").addEventListener("click", async () => {
+  // Récupère les quatre valeurs du formulaire et les convertit en nombres
+  // pour envoyer à l'API un objet conforme au schéma SensorReading.
+  const reading = Object.fromEntries(FEATURES.map(f => [f, Number(document.getElementById(f).value)]));
+  // TODO (TP2) : Envoyez reading en POST JSON à <url>/v1/predict avec l'en-tête X-API-Key (fetch), puis affichez le résultat ou l'erreur avec show()
+  // Retire les espaces et les slashs finaux de l'URL saisie, afin de construire
+  // correctement l'adresse complète /v1/predict.
+  const url = document.getElementById("url").value.trim().replace(/\/+$/, "");
+  const key = document.getElementById("key").value;
+
+  try {
+    // Envoie le relevé en POST. Content-Type indique que le corps est du JSON ;
+    // X-API-Key transmet le secret dans un en-tête, pas dans l'URL.
+    const response = await fetch(`${url}/v1/predict`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-API-Key": key
+      },
+      body: JSON.stringify(reading)
+    });
+    // Lit le corps JSON de la réponse, qu'il s'agisse d'un résultat ou d'une erreur.
+    const result = await response.json();
+
+    // Une réponse HTTP d'erreur (401, 422, etc.) arrive normalement jusqu'ici :
+    // response.ok vaut false, et l'API fournit son explication dans "detail".
+    if (!response.ok) {
+      // "detail" est parfois une chaîne (authentification), parfois une liste
+      // d'erreurs de validation Pydantic ; stringify permet de l'afficher dans les deux cas.
+      const detail = typeof result.detail === "string"
+        ? result.detail
+        : JSON.stringify(result.detail ?? result);
+      show("err", `Erreur ${response.status} : ${detail}`);
+      return;
+    }
+
+    // L'API renvoie une probabilité entre 0 et 1 : on l'affiche en pourcentage,
+    // puis on choisit le style selon que le seuil d'alerte est atteint ou non.
+    const probability = (result.failure_probability * 100).toFixed(1);
+    const message = `${result.alert ? "Alerte" : "Pas d’alerte"} — probabilité de panne : ${probability} %`;
+    show(result.alert ? "alert" : "ok", message);
+  } catch (error) {
+    // Une panne réseau ou un blocage CORS empêche d'obtenir une réponse HTTP :
+    // l'erreur est alors interceptée ici et signalée à l'utilisateur.
+    show("err", `Impossible de contacter l’API : ${error.message}`);
+  }
+});
+</script>
+</body>
+</html>
