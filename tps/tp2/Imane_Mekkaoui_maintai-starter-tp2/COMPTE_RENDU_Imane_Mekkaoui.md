@@ -191,19 +191,24 @@ Dernière ligne de `python -m pytest` avec `headers=HEADERS` :
 ## 7. Questions de compréhension
 
 1. Quelle différence entre 401 et 422 ? Et entre 401 et 403 ?
-   401 signifie que l’authentification a échoué (clé absente ou invalide). 422 signifie que la requête est comprise, mais que ses données ne respectent pas les règles de validation. 403 signifie que l’utilisateur est authentifié, mais qu’il n’a pas l’autorisation d’accéder à la ressource.
 
-2. Pourquoi la clé n'est-elle ni dans le code ni dans Git ? Que contiennent `.env` et `.env.example`, et lequel est commité ?
-   La clé est un secret : la mettre dans le code ou Git risquerait de la divulguer. Le fichier .env contient la vraie clé locale et ne doit pas être commité. .env.example contient un exemple ou des valeurs fictives pour montrer quelles variables configurer ; celui-là est commité.
+401 signifie que l’authentification a échoué (clé absente ou invalide). 422 signifie que la requête est comprise, mais que ses données ne respectent pas les règles de validation. 403 signifie que l’utilisateur est authentifié, mais qu’il n’a pas l’autorisation d’accéder à la ressource.
 
-3. Pourquoi la clé voyage-t-elle dans un en-tête et pas dans l'URL ?
-   Un en-tête comme X-API-Key est préférable à une URL, car les URL peuvent être enregistrées dans l’historique du navigateur, les journaux de serveurs ou des outils d’analyse.
+3. Pourquoi la clé n'est-elle ni dans le code ni dans Git ? Que contiennent `.env` et `.env.example`, et lequel est commité ?
 
-4. Que fait `secrets.compare_digest` de plus qu'un simple `==` ?
-   secrets.compare_digest compare les clés en temps constant, ce qui réduit le risque qu’un attaquant devine la clé en mesurant la durée de comparaison.
+La clé est un secret : la mettre dans le code ou Git risquerait de la divulguer. Le fichier .env contient la vraie clé locale et ne doit pas être commité. .env.example contient un exemple ou des valeurs fictives pour montrer quelles variables configurer ; celui-là est commité.
 
-5. Qu'est-ce qu'une « origine » ? `http://localhost:5500` et `http://localhost:8000` sont-elles la même origine ?
-   Une origine est définie par le schéma (http/https), le nom d’hôte et le port. http://localhost:5500 et http://localhost:8000 sont donc deux origines différentes, car leurs ports diffèrent.
+4. Pourquoi la clé voyage-t-elle dans un en-tête et pas dans l'URL ?
+
+Un en-tête comme X-API-Key est préférable à une URL, car les URL peuvent être enregistrées dans l’historique du navigateur, les journaux de serveurs ou des outils d’analyse.
+
+5. Que fait `secrets.compare_digest` de plus qu'un simple `==` ?
+
+secrets.compare_digest compare les clés en temps constant, ce qui réduit le risque qu’un attaquant devine la clé en mesurant la durée de comparaison.
+
+6. Qu'est-ce qu'une « origine » ? `http://localhost:5500` et `http://localhost:8000` sont-elles la même origine ?
+
+Une origine est définie par le schéma (http/https), le nom d’hôte et le port. http://localhost:5500 et http://localhost:8000 sont donc deux origines différentes, car leurs ports diffèrent.
 
 ## 8. Le rendu Git
 
