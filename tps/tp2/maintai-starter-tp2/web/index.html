@@ -1,0 +1,191 @@
+
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MaintAI : client web</title>
+
+<style>
+  body {
+    font-family: system-ui, sans-serif;
+    max-width: 520px;
+    margin: 40px auto;
+    padding: 0 16px;
+  }
+
+  label {
+    display: block;
+    margin-top: 12px;
+  }
+
+  input {
+    width: 100%;
+    padding: 6px;
+    box-sizing: border-box;
+  }
+
+  button {
+    margin-top: 16px;
+    padding: 8px 16px;
+    cursor: pointer;
+  }
+
+  #result {
+    margin-top: 20px;
+    padding: 12px;
+    border-radius: 6px;
+    white-space: pre-wrap;
+  }
+
+  .ok { background: #e6f4ea; }
+  .alert { background: #fde7e7; }
+  .err { background: #fff4e5; }
+</style>
+</head>
+
+<body>
+<h1>MaintAI</h1>
+
+<label>
+  URL de l'API
+  <input id="url" value="http://localhost:8000">
+</label>
+
+<label>
+  Clé API
+  <input id="key" type="password" autocomplete="off">
+</label>
+
+<label>
+  Température (°C)
+  <input id="temperature_c" type="number" step="0.1" value="72">
+</label>
+
+<label>
+  Vibration (mm/s)
+  <input id="vibration_mm_s" type="number" step="0.1" value="6">
+</label>
+
+<label>
+  Charge (%)
+  <input id="load_pct" type="number" step="1" value="85">
+</label>
+
+<label>
+  Heures de fonctionnement
+  <input id="runtime_hours" type="number" step="100" value="15000">
+</label>
+
+<button id="go" type="button">Prédire</button>
+
+<div id="result" role="status" aria-live="polite"></div>
+
+<script>
+const FEATURES = [
+  "temperature_c",
+  "vibration_mm_s",
+  "load_pct",
+  "runtime_hours"
+];
+
+const show = (cls, text) => {
+  const r = document.getElementById("result");
+  r.className = cls;
+  r.textContent = text;
+};
+
+document.getElementById("go").addEventListener("click", async () => {
+  const button = document.getElementById("go");
+
+  try {
+    const url = document.getElementById("url").value.trim().replace(/\/+$/, "");
+    const key = document.getElementById("key").value.trim();
+
+    if (!url || !key) {
+      show("err", "Veuillez saisir l'URL de l'API et la clé API.");
+      return;
+    }
+
+    const reading = Object.fromEntries(
+      FEATURES.map(f => [
+        f,
+        Number(document.getElementById(f).value)
+      ])
+    );
+
+    if (FEATURES.some(f => document.getElementById(f).value.trim() === "" ||
+        !Number.isFinite(reading[f]))) {
+      show("err", "Veuillez saisir des valeurs numériques valides.");
+      return;
+    }
+
+    button.disabled = true;
+    show("err", "Prédiction en cours...");
+
+    // Envoi des mesures à l'API avec une requête POST JSON
+    const response = await fetch(`${url}/v1/predict`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-API-Key": key
+      },
+      body: JSON.stringify(reading)
+    });
+
+    // Lecture de la réponse JSON
+    const data = await response.json().catch(() => ({}));
+
+    // Gestion des erreurs HTTP
+    if (!response.ok) {
+      const detail = typeof data.detail === "string"
+        ? data.detail
+        : JSON.stringify(data.detail ?? data);
+
+      if (response.status === 401) {
+        show("err", "Erreur 401 : clé API absente ou invalide.");
+      } else if (response.status === 503) {
+        show("err", "Erreur 503 : le modèle n'est pas chargé. Vérifiez le modèle côté serveur.");
+      } else {
+        show("err", `Erreur HTTP ${response.status} : ${detail}`);
+      }
+      return;
+    }
+
+    // Affichage du résultat de prédiction
+    const prediction = data.prediction ?? data.predicted_class ?? data.label;
+    const probability = data.probability ?? data.proba ?? data.confidence;
+
+    const lines = ["Résultat de la prédiction :"];
+
+    if (prediction !== undefined) {
+      lines.push(`Prédiction : ${prediction}`);
+    }
+
+    if (probability !== undefined) {
+      lines.push(`Probabilité / confiance : ${probability}`);
+    }
+
+    if (prediction === undefined && probability === undefined) {
+      lines.push(JSON.stringify(data, null, 2));
+    }
+
+    const text = lines.join("\n");
+    const isAlert = /panne|défaut|alert|risque|1|true/i.test(String(prediction));
+
+    show(isAlert ? "alert" : "ok", text);
+
+  } catch (error) {
+    show(
+      "err",
+      "Impossible de contacter l'API. Vérifiez qu'elle est démarrée, que l'URL est correcte et que le navigateur autorise la requête.\n" +
+      error.message
+    );
+  } finally {
+    button.disabled = false;
+  }
+});
+</script>
+
+</body>
+</html>
