@@ -280,27 +280,12 @@ prototype et tester les fonctionnalités du projet.
 
 ## 6. Le rendu Git
 
--   **Lien de la pull request :** à compléter avec le lien de votre pull
+-   **Lien de la pull request :** 
     request GitHub.
--   **Le tag `tp3` existe sur GitHub :** à vérifier (oui / non).
--   **`git status` avant le commit :** à vérifier. Les fichiers `.env`,
-    `data/` ou `models/` ne doivent normalement pas être ajoutés au
-    dépôt s'ils contiennent des informations de configuration, des
-    données locales ou des modèles générés.
+-   **Le tag `tp3` existe sur GitHub :** 
+-   **`git status` avant le commit :** 
+   
 
 ## 7. Ce qui reste flou
 
-J'ai encore quelques points à mieux comprendre :
 
--   La différence entre les requêtes envoyées depuis le navigateur et
-    celles envoyées depuis le serveur Python.
--   Le fonctionnement du chargement du modèle de Machine Learning dans
-    l'API.
--   La gestion des erreurs lorsque l'API est arrêtée ou lorsque le
-    modèle n'est pas disponible.
--   Le fonctionnement du cache Streamlit et les situations dans
-    lesquelles les données sont rechargées.
-
-Ce TP m'a permis de mieux comprendre comment relier une interface
-Streamlit à une API FastAPI, afficher des données et utiliser un modèle
-de Machine Learning pour réaliser une prédiction.
